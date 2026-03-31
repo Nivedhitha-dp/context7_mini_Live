@@ -1,0 +1,14 @@
+{
+  "name": "context7-mini-live",
+  "version": "1.0.0",
+  "description": "A toy Context7 MCP server that fetches live accessibility docs from official sources on demand",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "node-html-parser": "^6.1.0"
+  }
+}
