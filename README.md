@@ -38,10 +38,16 @@ Add this to your `~/.claude/settings.json` under `mcpServers`:
   "mcpServers": {
     "context7-mini-live": {
       "command": "node",
-      "args": ["/Users/nivedhitha/Downloads/context7_mini_live/index.js"]
+      "args": ["/absolute/path/to/index.js"]
     }
   }
 }
+```
+
+or 
+
+```
+claude mcp add context7-mini-live -- node /absolute/path/to/index.js
 ```
 
 Then restart Claude Code. The three tools below will be available.
@@ -74,6 +80,7 @@ Output: Extracted text + code blocks from each example page, with source URL sho
 
 ## Example queries to ask Claude
 
+- *"Create a button for "next page"?"* → `get_component_docs({ component_id: "buttons" })`
 - *"What are the accessibility rules for buttons?"* → `get_component_docs({ component_id: "buttons" })`
 - *"Show me W3C examples for accessible images."* → `get_component_examples({ component_id: "images" })`
 - *"What does WCAG say about alt text?"* → `get_component_docs({ component_id: "images" })`
