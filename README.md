@@ -4,13 +4,16 @@ A toy Context7-style MCP server that fetches accessibility documentation **live 
 
 ## How it works
 
-When a tool is called, the server fetches the relevant pages from:
-- **W3C ARIA Authoring Practices Guide** (button patterns, keyboard interactions)
-- **W3C WCAG 2.2 Understanding docs** (per success criterion)
-- **W3C Web Accessibility Tutorials** (image tutorials, alt-text decision tree)
-- **MDN Web Docs** (HTML element reference)
+When a tool is called, the server looks up the requested component
+(e.g. `buttons`, `images`, `color_contrast`) in `sources.js` and
+fetches the relevant pages live from official W3C and MDN sources.
 
-Content is extracted from the `<main>` region, cleaned to plain text + fenced code blocks, and returned directly — nothing is written to disk. A session-level in-memory cache avoids re-fetching the same URL twice within one server session.
+Content is extracted from the `<main>` region of each page, cleaned
+to plain text with fenced code blocks preserved, and returned directly
+as context — nothing is written to disk.
+
+A session-level in-memory cache avoids re-fetching the same URL twice
+within one server session, so repeated calls stay fast.
 
 ## Setup
 
