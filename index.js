@@ -12,8 +12,8 @@
  * Tools:
  *   resolve_components     — plain-English task → relevant component IDs + rationale
  *   list_components        — list all available component IDs
- *   get_component_docs     — fetch live docs (core sources by default)
- *   get_component_examples — fetch live examples (core sources by default)
+ *   get_component_docs     — fetch live docs for a component
+ *   get_component_examples — fetch live examples for a component
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -104,7 +104,7 @@ function resolveComponents(description) {
 const FETCH_TIMEOUT_MS = 15_000;
 const MAX_TEXT_LENGTH = 12_000;
 
-async function fetchPageText(url, selector) {
+async function fetchPageText(url) {
   if (SESSION_CACHE.has(url)) {
     console.error(`[cache hit] ${url}`);
     return SESSION_CACHE.get(url);
@@ -133,7 +133,7 @@ async function fetchPageText(url, selector) {
 
   const root = parse(html);
 
-  const candidates = [selector, "#main-content", "#main", "main", "article", ".content", "body"];
+  const candidates = ["#main-content", "#main", "main", "article", ".content", "body"];
   let contentNode = null;
   for (const sel of candidates) {
     contentNode = root.querySelector(sel);
@@ -177,7 +177,7 @@ async function fetchPageText(url, selector) {
 async function fetchSources(sourceList) {
   const results = await Promise.allSettled(
     sourceList.map(async (src) => {
-      const text = await fetchPageText(src.url, src.selector);
+      const text = await fetchPageText(src.url);
       return { label: src.label, url: src.url, content: text };
     })
   );
@@ -248,8 +248,6 @@ const GET_COMPONENT_DOCS_TOOL = {
   name: "get_component_docs",
   description:
     "Fetch live accessibility specification and constraint documentation for a component. " +
-    "By default fetches the core sources (most essential, fastest). " +
-    "Pass extended: true to also fetch the full reference library for that component. " +
     "Always call resolve_components first to know which component IDs to request.",
   inputSchema: {
     type: "object",
@@ -257,12 +255,6 @@ const GET_COMPONENT_DOCS_TOOL = {
       component_id: {
         type: "string",
         description: "Component ID returned by resolve_components or list_components.",
-      },
-      extended: {
-        type: "boolean",
-        description:
-          "If true, fetches all sources including the extended library. " +
-          "Default false (core sources only).",
       },
     },
     required: ["component_id"],
@@ -273,8 +265,6 @@ const GET_COMPONENT_EXAMPLES_TOOL = {
   name: "get_component_examples",
   description:
     "Fetch live accessible code examples for a component from official W3C / MDN / library sources. " +
-    "By default fetches the core examples (most essential). " +
-    "Pass extended: true to fetch all available examples including framework-specific ones. " +
     "Always call resolve_components first to know which component IDs to request.",
   inputSchema: {
     type: "object",
@@ -282,12 +272,6 @@ const GET_COMPONENT_EXAMPLES_TOOL = {
       component_id: {
         type: "string",
         description: "Component ID returned by resolve_components or list_components.",
-      },
-      extended: {
-        type: "boolean",
-        description:
-          "If true, fetches all examples including extended library sources. " +
-          "Default false (core examples only).",
       },
     },
     required: ["component_id"],
@@ -341,10 +325,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const list = Object.entries(SOURCES).map(([id, def]) => ({
       id,
       title: def.title,
-      core_docs: def.docs.core.length,
-      extended_docs: def.docs.extended.length,
-      core_examples: def.examples.core.length,
-      extended_examples: def.examples.extended.length,
+      docs: def.docs.length,
+      examples: def.examples.length,
     }));
 
     return {
@@ -354,7 +336,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   // ── get_component_docs ────────────────────────────────────────────────────
   if (name === "get_component_docs") {
-    const { component_id, extended = false } = args;
+    const { component_id } = args;
     const def = SOURCES[component_id];
 
     if (!def) {
@@ -368,13 +350,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    const sourceList = extended
-      ? [...def.docs.core, ...def.docs.extended]
-      : def.docs.core;
-
-    const fetched = await fetchSources(sourceList);
-    const tier = extended ? "core + extended" : "core";
-    const header = `<!-- ${component_id} docs — ${tier} (${sourceList.length} sources) -->\n\n`;
+    const fetched = await fetchSources(def.docs);
+    const header = `<!-- ${component_id} docs — ${def.docs.length} sources -->\n\n`;
 
     return {
       content: [{ type: "text", text: header + formatFetched(fetched) }],
@@ -383,7 +360,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   // ── get_component_examples ────────────────────────────────────────────────
   if (name === "get_component_examples") {
-    const { component_id, extended = false } = args;
+    const { component_id } = args;
     const def = SOURCES[component_id];
 
     if (!def) {
@@ -397,13 +374,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    const sourceList = extended
-      ? [...def.examples.core, ...def.examples.extended]
-      : def.examples.core;
-
-    const fetched = await fetchSources(sourceList);
-    const tier = extended ? "core + extended" : "core";
-    const header = `<!-- ${component_id} examples — ${tier} (${sourceList.length} sources) -->\n\n`;
+    const fetched = await fetchSources(def.examples);
+    const header = `<!-- ${component_id} examples — ${def.examples.length} sources -->\n\n`;
 
     return {
       content: [{ type: "text", text: header + formatFetched(fetched) }],

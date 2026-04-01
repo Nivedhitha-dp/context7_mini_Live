@@ -1,6 +1,6 @@
 # context7-mini-live
 
-A toy Context7-style MCP server that fetches accessibility documentation **live from official W3C and MDN sources** on demand — no local data files, nothing stored, always current.
+A toy Context7-style MCP server that fetches accessibility documentation **live from official sources** on demand — no local data files, nothing stored, always current.
 
 ## How it works
 
@@ -80,7 +80,7 @@ Output: Extracted text + code blocks from each example page, with source URL sho
 
 ## Example queries to ask Claude
 
-- *"Create a button for "next page"?"* → `get_component_docs({ component_id: "buttons" })`
+- *"Create a button for "next page"* → `get_component_docs({ component_id: "buttons" })`
 - *"What are the accessibility rules for buttons?"* → `get_component_docs({ component_id: "buttons" })`
 - *"Show me W3C examples for accessible images."* → `get_component_examples({ component_id: "images" })`
 - *"What does WCAG say about alt text?"* → `get_component_docs({ component_id: "images" })`
