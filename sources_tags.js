@@ -7,17 +7,7 @@
  *   selector — CSS selector for the main content block on that page
  *   tags     — keywords used by the query filter in get_component_docs /
  *              get_component_examples. Keep tags lowercase and hyphenated.
- *
- * Tag conventions:
- *   wcag, wcag21, aria, html, mdn          — spec/source authority
- *   alt-text, keyboard, contrast, focus,
- *   name, role, state, value               — accessibility concept
- *   decorative, informative, functional,
- *   complex, null-alt, icon-button, toggle — element sub-type
- *   technique, failure, quickref, spec     — document type
- *   react, astro, design-system            — framework/library
- *   checklist, writing-guide, how-to,
- *   explainer, tool, source-code, npm      — content format
+
  */
 
 export const SOURCES = {
